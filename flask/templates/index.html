@@ -1,0 +1,101 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Index</title>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@2.0.0/dist/tf.min.js"></script>
+</head>
+<body>
+<canvas id="canvas" width="280px"  height="280px" style="background-color: black;outline: solid black 2px; "></canvas>
+<img src="#" id="canvasimg"style="position:absolute;top:10%;left:52%;" style="display: none;" width="28px" height="28px" hidden>
+<br/>
+<input type="submit" name="clear" value="clear" onClick="reload();">
+<input type="submit" name="predict" value="save" onClick="save();">
+<form action="/data" method="POST">
+	
+	<input type="text" name="image" id="imagedata" value="" hidden >
+	<input type="submit">
+</form>
+<p>res is :{{ans}}</p>
+<script type="text/javascript">
+	var canvas=document.getElementById("canvas");
+	var ctx=canvas.getContext('2d');
+	prevX=0;
+	prevY=0;
+	currX=0;currY=0;
+	var color="white";
+	var linewidth=2;
+	w=canvas.width;
+	h=canvas.height;
+	var dot_flag=false,flag=false;
+//draw
+function reload()
+{
+	location.reload();
+}
+	function draw()
+	{
+		ctx.beginPath();
+		ctx.strokeStyle="white";
+		ctx.moveTo(prevX,prevY);
+		ctx.lineTo(currX,currY);
+		ctx.strokeLength=10;
+		ctx.lineWidth=5;
+		ctx.stroke();
+		ctx.closePath();
+	}
+	//save
+	function save() {
+        document.getElementById("canvasimg").style.border = "2px solid";
+        var dataURL = canvas.toDataURL('image/png');
+        $('#canvasimg').css({"background-color":"black"});
+        document.getElementById("canvasimg").src = dataURL;
+        document.getElementById("canvasimg").style.display = "inline";
+        console.log((dataURL));
+        var data=dataURL.replace('data:image/png;base64,','');
+        $('#imagedata').val(data);
+    }
+	//find xy
+	function findxy(res,e)
+	{
+		if(res=='down')
+		{
+			prevX=currX;
+			prevY=currY;
+			currX=e.clientX-canvas.offsetLeft;
+			currY=e.clientY-canvas.offsetTop;
+			flag=true;dot_flag=true;
+			if(dot_flag){
+				ctx.beginPath();
+				ctx.fillStyle="white";
+				ctx.fillRect(currX,currY,2,2);
+				ctx.closePath();
+				dot_flag=false;
+			}
+		}
+		if(res=='up'||res=='out')
+		{
+			flag=false;
+		}
+		if(res=='move')
+		{
+			if(flag)
+			{
+				prevX=currX;
+				prevY=currY;
+				currX=e.clientX-canvas.offsetLeft;
+				currY=e.clientY-canvas.offsetTop;
+				draw();
+			}
+		}
+	}
+
+
+	canvas.addEventListener("mousemove",function(e){findxy('move',e)},false);
+	canvas.addEventListener("mouseup",function(e){findxy('up',e)},false);
+	canvas.addEventListener("mousedown",function(e){findxy('down',e)},false);
+	canvas.addEventListener("mouseout",function(e){findxy('out',e)},false);
+</script>
+
+</html>
